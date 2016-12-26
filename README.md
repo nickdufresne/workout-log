@@ -8,3 +8,10 @@ https://cloud.google.com/appengine/docs/go/download
 # and then view at: http://localhost:8080/
 goapp serve .
 
+# Todo
+(1) Build workout struct for datastore
+(2) Add task to index workouts for searching
+(3) Add mailgun API for outgoing/incoming email to queue up workouts and notifications
+(4) Import datastore into big query for analysis
+(5) add cloud endpoints for mobile app development
+(6) Add firebase.io for push and realtime features
