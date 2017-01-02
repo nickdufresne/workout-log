@@ -16,8 +16,19 @@
 
     <!-- Custom styles for this template -->
     <link href="/css/navbar.css" rel="stylesheet">
+    
     <script src="/js/jquery.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/vue.min.js"></script>
+    <script>
+      var app = new Vue({
+        el: '#app',
+        data: {
+          type: 'Swim',
+          message: 'Hello'
+        }
+      });
+    </script>
   </head>
 
   <body>
@@ -48,11 +59,12 @@
       </nav> <!-- /navbar -->
 
       <!-- Main component for a primary marketing message or call to action -->
-      <div class="jumbotron">
-        <h1>Record New Workout</h1>
+      <div class="jumbotron" id="app">
+        <h1>Record New Workout 2</h1>
         <form action="/workouts" method="POST">
           <label for="workout[type]"> Workout Type </label>
-          <input name="workout[type]" type="text" class="form-control"/>
+          <input v-model="type" name="workout[type]" type="text" class="form-control"/>
+          <p>{{message}}</p>
           <button type="submit" class="btn btn-primary"> Record </button>
         </form>
       </div>
