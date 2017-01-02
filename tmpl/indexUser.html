@@ -51,8 +51,10 @@
       <div class="jumbotron">
         <h1>{{.Name}}'s Workouts</h1>
         <a href="/workouts/new" class="primary"> Add Workout </a>
+        {{range .RecentWorkouts}}
+          <p> <a href="/workouts/{{encodeKey .Key}}">Date: {{date .Date}}</a>, Type: {{.Type}} </p>
+        {{end}}
       </div>
-
     </div> <!-- /container -->
     
   </body>

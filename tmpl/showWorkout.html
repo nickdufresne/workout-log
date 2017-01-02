@@ -13,47 +13,12 @@
 
     <!-- Bootstrap core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/datepicker.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="/css/navbar.css" rel="stylesheet">
     
     <script src="/js/jquery.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
-    <script src="/js/vue.min.js"></script>
-    <script src="/js/datepicker.min.js"></script>
-    <script>
-      $(document).ready(function(){
-        var today = new Date();
-        var dd = today.getDate();
-        var mm = today.getMonth()+1; //January is 0!
-        var yyyy = today.getFullYear();
-
-        if(dd<10) {
-            dd='0'+dd
-        } 
-
-        if(mm<10) {
-            mm='0'+mm
-        } 
-
-        today = mm+'/'+dd+'/'+yyyy;
-
-        
-
-        var app = new Vue({
-          el: '#app',
-          data: {
-            date: today,
-            type: '',
-            details: ''
-          }
-        });
-
-        $('#date').datepicker({});
-        
-      });
-    </script>
   </head>
 
   <body>
@@ -62,10 +27,10 @@
       <nav class="navbar navbar-light bg-faded">
         <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbar-header" aria-controls="navbar-header" aria-expanded="false" aria-label="Toggle navigation"></button>
         <div class="collapse navbar-toggleable-xs" id="navbar-header">
-          <a class="navbar-brand" href="#">Workout Log</a>
+          <a class="navbar-brand" href="/">Workout Log</a>
           <ul class="nav navbar-nav">
             <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+              <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/settings">Account Settings</a>
@@ -73,7 +38,7 @@
           </ul>
           <ul class="nav navbar-nav">
             <li class="nav-item active">
-              <a href="[[.LogoutURL]]" class="btn btn-primary login"> Logout </a>
+              <a href="{{.LogoutURL}}" class="btn btn-primary login"> Logout </a>
             </li>
           </ul>
           <form class="form-inline float-xs-right">
@@ -85,23 +50,10 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron" id="app">
-        <h1>Record New Workout 2</h1>
-        <form action="/workouts" method="POST">
-          <div class="form-group">
-            <label for="date"> Workout Date </label>
-            <input v-model="date" name="date" type="text" class="form-control" placeholder="Workout Date" id="date"/>
-          </div>
-          <div class="form-group">
-            <label for="type"> Workout Type </label>
-            <input v-model="type" name="type" type="text" class="form-control" placeholder="Workout Type"/>
-          </div>
-          <div class="form-group">
-            <label for="workout[type]"> Details </label>
-            <textarea v-model="details" name="details" class="form-control" rows="8" placeholder="Workout Details"></textarea>
-          </div>
-          
-          <button type="submit" class="btn btn-primary"> Record </button>
-        </form>
+        <h1>Workout:</h1>
+        <p> Date: {{.DateS}}</p>
+        <p> Type: {{.Workout.Type}}</p>
+        <p> Details: {{.Workout.Details}}</p>
       </div>
 
     </div> <!-- /container -->

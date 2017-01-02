@@ -3,14 +3,19 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
 	"path"
+	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
+
+	"github.com/gorilla/mux"
 )
 
 var notFoundErr = errors.New("Not Found")
@@ -24,20 +29,34 @@ func goTemplate(filename string) *template.Template {
 	return template.Must(template.ParseFiles(filename))
 }
 
+func encodeKey(k *datastore.Key) string {
+	return k.Encode()
+}
+
+func formatDate(d time.Time) string {
+	return d.Format("01/02/2006")
+}
+
+var templateFns = map[string]interface{}{
+	"encodeKey": encodeKey,
+	"date":      formatDate,
+}
+
+func woTemplate(filename string) *template.Template {
+	name := path.Base(filename)
+	return template.Must(template.New(name).Funcs(templateFns).ParseFiles(filename))
+}
+
 var (
-	indexTmpl      = goTemplate("tmpl/index.html")
-	indexUserTmpl  = goTemplate("tmpl/indexUser.html")
-	loginTmpl      = goTemplate("tmpl/login.html")
-	newWorkoutTmpl = vueTemplate("tmpl/newWorkout.html")
+	indexTmpl       = goTemplate("tmpl/index.html")
+	indexUserTmpl   = woTemplate("tmpl/indexUser.html")
+	loginTmpl       = goTemplate("tmpl/login.html")
+	newWorkoutTmpl  = vueTemplate("tmpl/newWorkout.html")
+	showWorkoutTmpl = woTemplate("tmpl/showWorkout.html")
 )
 
 type indexPage struct {
 	LoginURL string
-}
-
-type userIndexPage struct {
-	LogoutURL string
-	Name      string
 }
 
 type handler func(http.ResponseWriter, *http.Request) error
@@ -114,15 +133,38 @@ func indexHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	//load up recent activities
+	return indexUserHandler(w, r, u, c)
 
+}
+
+type userIndexPage struct {
+	LogoutURL      string
+	Name           string
+	User           *User
+	RecentWorkouts []*Workout
+}
+
+func indexUserHandler(w http.ResponseWriter, r *http.Request, gu *user.User, c context.Context) error {
 	url, err := user.LogoutURL(c, "/")
 	if err != nil {
 		return err
 	}
 
+	u, err := FindOrCreateUser(c)
+	if err != nil {
+		return err
+	}
+
+	workouts, err := FindRecentWorkoutsForUser(c, u)
+	if err != nil {
+		return err
+	}
+
 	p := userIndexPage{
-		LogoutURL: url,
-		Name:      u.Email,
+		LogoutURL:      url,
+		Name:           gu.Email,
+		User:           u,
+		RecentWorkouts: workouts,
 	}
 
 	if err := render(w, indexUserTmpl, &p); err != nil {
@@ -172,14 +214,75 @@ func newWorkoutHandler(w http.ResponseWriter, r *http.Request, u *user.User, c c
 	return nil
 }
 
-func createWorkoutHandler(w http.ResponseWriter, r *http.Request, u *user.User, c context.Context) error {
-	w.Write([]byte(`hi`))
+func createWorkoutHandler(w http.ResponseWriter, r *http.Request, gu *user.User, c context.Context) error {
+	date := r.FormValue("date")
+	t, err := time.Parse("01/02/2006", date)
+
+	if err != nil {
+		return newWorkoutHandler(w, r, gu, c)
+	}
+
+	wo := Workout{
+		Type:    r.FormValue("type"),
+		Details: r.FormValue("details"),
+		Date:    t,
+	}
+
+	u, err := FindOrCreateUser(c)
+
+	if err != nil {
+		return err
+	}
+
+	if err := CreateWorkoutForUser(c, &wo, u); err != nil {
+		return err
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/workouts/%s", wo.Key.Encode()), 302)
+	return nil
+}
+
+type showWorkoutPage struct {
+	Name      string
+	LogoutURL string
+	DateS     string
+	Workout   *Workout
+	User      *User
+}
+
+func showWorkoutHandler(w http.ResponseWriter, r *http.Request, gu *user.User, c context.Context) error {
+	u, err := FindOrCreateUser(c)
+
+	if err != nil {
+		return err
+	}
+
+	vars := mux.Vars(r)
+	woKey := vars["workoutKey"]
+
+	wo, err := FindWorkoutForUser(c, u, woKey)
+	if err != nil {
+		return err
+	}
+
+	p := showWorkoutPage{
+		User:    u,
+		Workout: wo,
+		DateS:   wo.Date.Format("01/02/2006"),
+	}
+
+	if err := render(w, showWorkoutTmpl, &p); err != nil {
+		return err
+	}
 	return nil
 }
 
 func init() {
-	http.Handle("/", handler(indexHandler))
-	http.Handle("/login", handler(loginHandler))
-	http.Handle("/workouts/new", userHandler(newWorkoutHandler))
-	http.Handle("/workouts", userHandler(createWorkoutHandler))
+	r := mux.NewRouter()
+	r.Handle("/", handler(indexHandler))
+	r.Handle("/login", handler(loginHandler))
+	r.Handle("/workouts/new", userHandler(newWorkoutHandler))
+	r.Handle("/workouts/{workoutKey}", userHandler(showWorkoutHandler))
+	r.Handle("/workouts", userHandler(createWorkoutHandler))
+	http.Handle("/", r)
 }
