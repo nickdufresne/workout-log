@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
+	"path"
 
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -14,11 +15,16 @@ import (
 
 var notFoundErr = errors.New("Not Found")
 
+func tmpl(filename string) *template.Template {
+	name := path.Base(filename)
+	return template.Must(template.New(name).Delims("[[", "]]").ParseFiles(filename))
+}
+
 var (
-	indexTmpl      = template.Must(template.ParseFiles("tmpl/index.html"))
-	indexUserTmpl  = template.Must(template.ParseFiles("tmpl/indexUser.html"))
-	loginTmpl      = template.Must(template.ParseFiles("tmpl/login.html"))
-	newWorkoutTmpl = template.Must(template.ParseFiles("tmpl/newWorkout.html"))
+	indexTmpl      = tmpl("tmpl/index.html")
+	indexUserTmpl  = tmpl("tmpl/indexUser.html")
+	loginTmpl      = tmpl("tmpl/login.html")
+	newWorkoutTmpl = tmpl("tmpl/newWorkout.html")
 )
 
 type indexPage struct {
