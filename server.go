@@ -15,16 +15,20 @@ import (
 
 var notFoundErr = errors.New("Not Found")
 
-func tmpl(filename string) *template.Template {
+func vueTemplate(filename string) *template.Template {
 	name := path.Base(filename)
 	return template.Must(template.New(name).Delims("[[", "]]").ParseFiles(filename))
 }
 
+func goTemplate(filename string) *template.Template {
+	return template.Must(template.ParseFiles(filename))
+}
+
 var (
-	indexTmpl      = tmpl("tmpl/index.html")
-	indexUserTmpl  = tmpl("tmpl/indexUser.html")
-	loginTmpl      = tmpl("tmpl/login.html")
-	newWorkoutTmpl = tmpl("tmpl/newWorkout.html")
+	indexTmpl      = goTemplate("tmpl/index.html")
+	indexUserTmpl  = goTemplate("tmpl/indexUser.html")
+	loginTmpl      = goTemplate("tmpl/login.html")
+	newWorkoutTmpl = vueTemplate("tmpl/newWorkout.html")
 )
 
 type indexPage struct {
