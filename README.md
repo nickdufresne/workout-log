@@ -5,6 +5,14 @@ Workout Log built with golang and google appengine
 https://cloud.google.com/appengine/docs/go/download
 
 # from workout-log directory
+
+go get golang.org/x/net/context
+go get google.golang.org/appengine
+go get google.golang.org/appengine/datastore
+go get google.golang.org/appengine/user
+go get google.golang.org/appengine/log
+go get google.golang.org/appengine/search
+
 # and then view at: http://localhost:8080/
 goapp serve .
 
