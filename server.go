@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -277,6 +278,63 @@ func showWorkoutHandler(w http.ResponseWriter, r *http.Request, gu *user.User, c
 	return nil
 }
 
+type Settings struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	ID    int64  `json:"id"`
+}
+
+func getSettingsHandler(w http.ResponseWriter, r *http.Request, gu *user.User, c context.Context) error {
+
+	u, err := FindOrCreateUser(c)
+
+	if err != nil {
+		return err
+	}
+
+	s := Settings{
+		Name:  u.Name,
+		Email: gu.Email,
+		ID:    u.ID,
+	}
+
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(&s); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateSettingsHandler(w http.ResponseWriter, r *http.Request, gu *user.User, c context.Context) error {
+
+	u, err := FindOrCreateUser(c)
+
+	if err != nil {
+		return err
+	}
+
+	s := new(Settings)
+
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&s); err != nil {
+		return err
+	}
+
+	u.Email = s.Email
+	u.Name = s.Name
+
+	if err := SaveUser(c, u); err != nil {
+		return err
+	}
+
+	if _, err := w.Write([]byte(`{"ok": true}`)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func init() {
 	r := mux.NewRouter()
 	r.Handle("/", handler(indexHandler))
@@ -284,5 +342,7 @@ func init() {
 	r.Handle("/workouts/new", userHandler(newWorkoutHandler))
 	r.Handle("/workouts/{workoutKey}", userHandler(showWorkoutHandler))
 	r.Handle("/workouts", userHandler(createWorkoutHandler))
+	r.Handle("/settings", userHandler(getSettingsHandler)).Methods("GET")
+	r.Handle("/settings", userHandler(updateSettingsHandler)).Methods("POST")
 	http.Handle("/", r)
 }

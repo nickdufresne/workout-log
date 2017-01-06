@@ -4,6 +4,8 @@ runtime: go
 api_version: go1
 
 handlers:
+- url: /views
+  static_dir: views
 - url: /css
   static_dir: assets/css
 - url: /js

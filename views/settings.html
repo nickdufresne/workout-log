@@ -1,0 +1,13 @@
+<h1>Account Settings</h1>
+
+<form>
+  <div class="form-group">
+    <label for="name"> Name </label>
+    <input ng-model="settings.name" type="text" class="form-control" placeholder="Name"/>
+  </div>
+  <div class="form-group">
+    <label for="email"> Email </label>
+    <input ng-model="settings.email" type="text" class="form-control" placeholder="Email"/>
+  </div>
+  <button type="submit" class="btn btn-primary" ng-click="saveSettings()"> Update </button>
+</form>

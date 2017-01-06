@@ -32,6 +32,15 @@ func GetUserByParentKey(c context.Context, pk *datastore.Key) (*User, error) {
 	return nil, nil
 }
 
+func SaveUser(c context.Context, user *User) error {
+	_, err := datastore.Put(c, user.Key, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func FindOrCreateUser(c context.Context) (*User, error) {
 	u := user.Current(c)
 

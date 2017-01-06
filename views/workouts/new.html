@@ -1,0 +1,19 @@
+<div class="jumbotron" id="app">
+  <h1>Record New Workout 2</h1>
+  <form action="/workouts" method="POST">
+    <div class="form-group">
+      <label for="date"> Workout Date </label>
+      <input v-model="date" name="date" type="text" class="form-control" placeholder="Workout Date" id="date"/>
+    </div>
+    <div class="form-group">
+      <label for="type"> Workout Type </label>
+      <input v-model="type" name="type" type="text" class="form-control" placeholder="Workout Type"/>
+    </div>
+    <div class="form-group">
+      <label for="workout[type]"> Details </label>
+      <textarea v-model="details" name="details" class="form-control" rows="8" placeholder="Workout Details"></textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-primary"> Record </button>
+  </form>
+</div>
